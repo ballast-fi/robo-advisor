@@ -1,0 +1,361 @@
+{
+  "contractName": "IPool",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IPool.sol\":\"IPool\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IPool.sol\":{\"keccak256\":\"0x02750fad91a7b2c8b2c5e83761203b1c9df48e8c5e84991d999826e5e2a3faa3\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://51c96cc23d01cd221e9e22721e21ff441b4c428a53aae4afb1037d07bbf76aa0\",\"dweb:/ipfs/QmV7t1cHtWdHMH7LaXrGbfXzhJbG4cHLXTBHr5szy7VMCi\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.2;\n\ninterface IPool {\n\n    function initialize(string calldata name, string calldata symbol, address token) external;\n\n}",
+  "sourcePath": "/home/osboxes/robo-advisor/contracts/interfaces/IPool.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/interfaces/IPool.sol",
+    "exportedSymbols": {
+      "IPool": [
+        3548
+      ]
+    },
+    "id": 3549,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3538,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:24"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 3548,
+        "linearizedBaseContracts": [
+          3548
+        ],
+        "name": "IPool",
+        "nameLocation": "68:5:24",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "077f224a",
+            "id": 3547,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initialize",
+            "nameLocation": "90:10:24",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3545,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3540,
+                  "mutability": "mutable",
+                  "name": "name",
+                  "nameLocation": "117:4:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "101:20:24",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3539,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "101:6:24",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3542,
+                  "mutability": "mutable",
+                  "name": "symbol",
+                  "nameLocation": "139:6:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "123:22:24",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3541,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "123:6:24",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3544,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "155:5:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "147:13:24",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3543,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "147:7:24",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "100:61:24"
+            },
+            "returnParameters": {
+              "id": 3546,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "170:0:24"
+            },
+            "scope": 3548,
+            "src": "81:90:24",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3549,
+        "src": "58:116:24"
+      }
+    ],
+    "src": "33:141:24"
+  },
+  "legacyAST": {
+    "absolutePath": "project:/contracts/interfaces/IPool.sol",
+    "exportedSymbols": {
+      "IPool": [
+        3548
+      ]
+    },
+    "id": 3549,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3538,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:24"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 3548,
+        "linearizedBaseContracts": [
+          3548
+        ],
+        "name": "IPool",
+        "nameLocation": "68:5:24",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "077f224a",
+            "id": 3547,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initialize",
+            "nameLocation": "90:10:24",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3545,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3540,
+                  "mutability": "mutable",
+                  "name": "name",
+                  "nameLocation": "117:4:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "101:20:24",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3539,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "101:6:24",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3542,
+                  "mutability": "mutable",
+                  "name": "symbol",
+                  "nameLocation": "139:6:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "123:22:24",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3541,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "123:6:24",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3544,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "155:5:24",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3547,
+                  "src": "147:13:24",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3543,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "147:7:24",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "100:61:24"
+            },
+            "returnParameters": {
+              "id": 3546,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "170:0:24"
+            },
+            "scope": 3548,
+            "src": "81:90:24",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3549,
+        "src": "58:116:24"
+      }
+    ],
+    "src": "33:141:24"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.2+commit.661d1103.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2021-09-02T14:56:46.966Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
