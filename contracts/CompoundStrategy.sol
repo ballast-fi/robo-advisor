@@ -123,6 +123,7 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         CERC20 cToken = CERC20(protocolToken);
         uint256 cRate = cToken.supplyRatePerBlock();
         apr = cRate.mul(blocksPerYear).mul(100);
+        apr += getGovAPR();
     }
 
     /// @notice Mints new protocol tokens in the strategy for underlying tokens.
@@ -150,7 +151,6 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         ComptrollerInterface(comptroller).claimComp(address(this), assets);
         uint256 balance = _compTokenBalanceOf();
 
-        // TODO check some thresholds, so that we dont liquidity low COMP token amounts
         if (balance < rewardThreshold) {
             return;
         }
@@ -187,5 +187,16 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     /// @return uint256 underlying balance
     function _compTokenBalanceOf() internal view returns (uint256) {
         return IERC20(compToken).balanceOf(address(this));
+    }
+
+    /// @notice APR for the governance token expressed in underlying
+    function getGovAPR() internal view returns (uint256 govAPR) {
+        CERC20 _cToken = CERC20(protocolToken);
+        uint256 compSpeeds = ComptrollerInterface(comptroller).compSpeeds(protocolToken);
+        uint256 cTokenNAV = _cToken.exchangeRateStored().mul(IERC20(protocolToken).totalSupply()).div(ONE_18);
+        // how much costs 1COMP in token (1e(_token.decimals()))
+        uint256 compUnderlyingPrice = contractRegistry.priceOracle().getPriceToken(compToken, underlying);
+        // mul(100) needed to have a result in the format 4.4e18
+        return compSpeeds.mul(compUnderlyingPrice).mul(blocksPerYear).mul(100).div(cTokenNAV);
     }
 }

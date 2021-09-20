@@ -45,6 +45,12 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     // Max assets percentage to be invested. The rest is kept in the pool as reserve
     uint256 public maxInvestmentPerc; // 100000 == 100% -> 1000
 
+    // Current fee on interest gained
+    uint256 public fee;
+
+    // Map that saves avg price paid for each user, used to calculate earnings
+    mapping(address => uint256) public userAvgPrices;
+
     /// @notice Initialize the contract instead of a constructor during deployment.
     /// @param  _name name of the LP token
     /// @param  _symbol symbol of the LP token
@@ -68,6 +74,20 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         maxInvestmentPerc = _maxInvestmentPerc;
     }
 
+    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+        _transfer(sender, recipient, amount);
+        _approve(sender, msg.sender, allowance(sender, msg.sender).sub(amount, "ERC20: transfer amount exceeds allowance"));
+        _updateUserFeeInfo(recipient, amount, userAvgPrices[sender]);
+        return true;
+    }
+
+
+    function transfer(address recipient, uint256 amount) public override returns (bool) {
+        _transfer(msg.sender, recipient, amount);
+        _updateUserFeeInfo(recipient, amount, userAvgPrices[msg.sender]);
+        return true;
+    }
+
     /// @notice Deposits the underlying token into the liquidity pool.
     /// @param  depositAmount underlying token amount to deposit
     function deposit(uint256 depositAmount) public {
@@ -76,9 +96,12 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         require(underlying.allowance(msg.sender, address(this)) >= depositAmount, "INSUFFICIENT_ALLOWANCE");
 
         uint256 toMint = _calculateMintAmount(depositAmount);
+        uint256 lpPrice = getPricePerFullShare();
 
         // Mint LP to sender.
         _mint(msg.sender, toMint);
+
+        _updateUserFeeInfo(msg.sender, toMint, lpPrice);
 
         // Transfer the tokens from the sender to this contract.
         underlying.safeTransferFrom(msg.sender, address(this), depositAmount);
@@ -99,6 +122,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         uint256 totalBalance = underlyingBalanceInclStrategy();
         uint256 underlyingBalance = underlyingBalanceInPool();
         uint256 underlyingAmountToWithdraw = totalBalance.mul(_redeemAmount).div(totalSupply);
+        uint256 lpPrice = getPricePerFullShare();
 
 
         if (underlyingAmountToWithdraw > underlyingBalance) {
@@ -119,8 +143,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
             redeemedTokens = underlyingAmountToWithdraw;
         }
 
-        // TODO charge exit fee
-        //redeemedTokens = _chargeFee(_redeemAmount, redeemedTokens);
+        redeemedTokens = _chargeFee(_redeemAmount, redeemedTokens, lpPrice);
         // Burn LP from sender
         _burn(msg.sender, _redeemAmount);
         // send underlying to sender
@@ -192,6 +215,23 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         }
 
         return depositAmount.mul(totalSupply).div(underlyingBalanceInclStrategy());
+    }
+
+    function _updateUserFeeInfo(address usr, uint256 qty, uint256 price) private {
+        uint256 usrBal = balanceOf(usr);
+        userAvgPrices[usr] = userAvgPrices[usr].mul(usrBal.sub(qty)).add(price.mul(qty)).div(usrBal);
+    }
+
+
+    function _chargeFee(uint256 amount, uint256 redeemed, uint256 currPrice) internal returns (uint256) {
+        uint256 avgPrice = userAvgPrices[msg.sender];
+        if (currPrice < avgPrice) {
+            return redeemed;
+        }
+
+        uint256 feeDue = amount.mul(currPrice.sub(avgPrice)).mul(fee).div(10**23);
+        // TODO send feeDue somewhere
+        return redeemed.sub(feeDue);
     }
 
     function availableToInvestOut() public view returns (uint256) {

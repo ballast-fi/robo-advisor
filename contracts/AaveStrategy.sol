@@ -14,6 +14,7 @@ import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/IContractRegistry.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IPool.sol";
+import "./interfaces/IPriceOracle.sol";
 
 /// @title  AaveStrategy
 /// @notice Strategy that invests the underlying token into Aave.
@@ -25,6 +26,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     using SafeMath for uint256;
 
     uint256 private constant ONE_18 = 10**18;
+
+    uint256 public constant secondsPerYear = 31536000;
 
     /// @notice Protocol token address (aToken)
     address public protocolToken;
@@ -118,7 +121,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     /// @notice APR for the current protocol token
     function getAPR() external override view returns (uint256 apr) {
         DataTypes.ReserveData memory data = ILendingPool(provider.getLendingPool()).getReserveData(underlying);
-        return uint256(data.currentLiquidityRate).div(10**7); // .mul(100).div(10**9)
+        apr = uint256(data.currentLiquidityRate).div(10**7); // .mul(100).div(10**9)
+        apr += getGovAPR();
     }
 
     /// @notice Mints new protocol tokens in the strategy for underlying tokens.
@@ -157,7 +161,6 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         address rewardToken = controller.REWARD_TOKEN();
         uint256 balance = IERC20(rewardToken).balanceOf(address(this));
 
-        // TODO check some thresholds, so that we dont liquidity low token amounts
         if (balance < rewardThreshold) {
             return;
         }
@@ -188,5 +191,19 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     /// @return uint256 underlying balance
     function _underlyingBalanceOf() internal view returns (uint256) {
         return IERC20(underlying).balanceOf(address(this));
+    }
+
+    /// @notice APR for the governance token expressed in underlying
+    function getGovAPR() internal view returns (uint256 govAPR) {
+        IAaveIncentivesController _ctrl = IAaveIncentivesController(
+            IAToken(protocolToken).getIncentivesController()
+        );
+        (,uint256 aavePerSec,) = _ctrl.getAssetData(protocolToken);
+        uint256 aTokenNAV = IERC20(protocolToken).totalSupply();
+        // how much costs 1AAVE in token (1e(_token.decimals()))
+        address rewardToken = _ctrl.REWARD_TOKEN();
+        uint256 aaveUnderlyingPrice = contractRegistry.priceOracle().getPriceToken(rewardToken, underlying);
+        // mul(100) needed to have a result in the format 4.4e18
+        govAPR = aavePerSec.mul(aaveUnderlyingPrice).mul(secondsPerYear).mul(100).div(aTokenNAV);
     }
 }

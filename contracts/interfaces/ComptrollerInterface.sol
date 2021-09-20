@@ -27,6 +27,8 @@ abstract contract ComptrollerInterface {
 
     function claimComp(address holder, address[] memory cTokens) external virtual;
 
+    function compSpeeds(address cToken) external view virtual returns (uint);
+
     function repayBorrowAllowed(
         address cToken,
         address payer,

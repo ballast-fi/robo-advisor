@@ -3,6 +3,7 @@
 pragma solidity ^0.8.2;
 
 import "./IPoolFactory.sol";
+import "./IPriceOracle.sol";
 
 interface IContractRegistry {
 
@@ -11,4 +12,6 @@ interface IContractRegistry {
     function requireAndGetAddress(bytes32 name) external view returns (address);
 
     function poolFactory() external view returns (IPoolFactory);
+
+    function priceOracle() external view returns (IPriceOracle);
 }
