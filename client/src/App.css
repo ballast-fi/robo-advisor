@@ -20,3 +20,14 @@
 .App-link {
   color: #09d3ac;
 }
+.progress {
+  background: #40506e !important;
+}
+.toast-body {
+  color: #40506e !important;
+  font-weight: 500;
+}
+.toast-wrapper {
+  background-color: #ffdc40a2 !important;
+
+}

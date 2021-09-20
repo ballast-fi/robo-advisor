@@ -20,7 +20,7 @@ module.exports = async(callback) => {
 
         let path = [wethAddress, token];
         const amountOutMin = '1' + Math.random().toString().slice(2,6);
-        const amountToBuyWith = web3.utils.toWei("1");
+        const amountToBuyWith = web3.utils.toWei("50");
 
         const receipt = await uniswapRouter.swapExactETHForTokens (
                 web3.utils.toHex(amountOutMin),

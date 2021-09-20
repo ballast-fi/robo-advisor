@@ -68,7 +68,7 @@ function isLoading(state = {instancesLoaded: false}, action) {
         case types.INSTANCES_LOADED:
             return {...state, instancesLoaded: true}
         case types.HANDLE_ERROR:
-            return {...state, isDepositing: false, isRedeeming: false, instancesLoaded: false}
+            return {...state, isDepositing: false, isRedeeming: false}
         default:
             return state;
     }

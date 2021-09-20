@@ -146,6 +146,10 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         require(aprBefore <= aprAfter, "LOWER_APR");
     }
 
+    function setMaxInvestmentPerc(uint256 _maxInvestmentPerc) external onlyOwner {
+        maxInvestmentPerc = _maxInvestmentPerc;
+    }
+
     /// @notice APR for the investment
     function getAPR() public view returns (uint256 apr) {
         return IStrategy(underlyingStrategy).getAPR();
