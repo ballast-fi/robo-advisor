@@ -129,11 +129,12 @@ const updatePool = async(poolInstance, poolAddress, ierc20, decimals, account, d
     }
 }
 
-export const tokenDeposit = async (web3, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch) => {
-    const depositNotify = () => toast(`DEPOSIT - ${amount} tokens`);
-    
+export const tokenDeposit = async (web3, poolName, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch) => {
+    const depositNotify = () => toast(`You've deposited ${amount} ${poolName} tokens`);
+    console.log('p', poolInstance)
     const _amount = toBN(amount, decimals);
     const ierc20 = new web3.eth.Contract(IERC20.abi, tokenAddress);
+
     dispatch(depositInProgress());
     const allowance = await ierc20.methods.allowance(account, poolAddress).call();
     //eslint-disable-next-line
@@ -147,30 +148,37 @@ export const tokenDeposit = async (web3, decimals, poolInstance, poolAddress, to
             })
         })
         .on('error', (error) => {
-            console.log('Could not deposit tokens', error);
+            if(error.code == 4001) {
+                toast('You rejected the transaction')
+            } else {
+            toast('Could not deposit tokens');
+            }
             dispatch(handleError())
-            // window.alert('There was an error depositing tokens')
         })
     } else {
         poolInstance.methods.deposit(_amount).send({ from: account })
-            .on('receipt', async () => {
-                depositNotify();
-                await updatePool(poolInstance, poolAddress, ierc20, decimals, account, dispatch);
-            })
+        .on('receipt', async () => {
+            depositNotify();
+            await updatePool(poolInstance, poolAddress, ierc20, decimals, account, dispatch);
+        })
         .on('error', (error) => {
-            console.log('Could not deposit tokens', error);
+            if(error.code == 4001) {
+                toast('You rejected the transaction')
+            } else {
+            toast('Could not deposit tokens');
+            }
             dispatch(handleError())
-            
         })
     }
 }
 
 export const tokenRedeem =  async(web3, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch) => {
-    const redeemNotify = () => toast(`REDEEM - ${amount} LPT tokens`);
+    const redeemNotify = () => toast(`You've redeemed ${amount} LPT tokens`);
     
     const _amount = toBN(amount, decimals)
     const ierc20 = new web3.eth.Contract(IERC20.abi, tokenAddress);
     const allowance = await poolInstance.methods.allowance(account,account).call()
+   
     dispatch(redeemInProgress());
     //eslint-disable-next-line
     if(allowance == 0){
@@ -183,9 +191,13 @@ export const tokenRedeem =  async(web3, decimals, poolInstance, poolAddress, tok
             })
         })
         .on('error', (error) => {
-            console.log('Could not redeem tokens', error);
+            if(error.code == 4001) {
+                toast('You rejected the transaction')
+            } else {
+            toast('Could not deposit tokens');
+            }
             dispatch(handleError())
-                })
+        })
     } else {
         poolInstance.methods.redeem(_amount).send({ from: account })
         .on('receipt', async () => {
@@ -193,7 +205,11 @@ export const tokenRedeem =  async(web3, decimals, poolInstance, poolAddress, tok
             await updatePool(poolInstance, poolAddress, ierc20, decimals, account, dispatch);
         })
         .on('error', (error) => {
-            console.log('Could not redeem tokens', error);
+            if(error.code == 4001) {
+                toast('You rejected the transaction')
+            } else {
+            toast('Could not deposit tokens');
+            }
             dispatch(handleError())
         })
     }

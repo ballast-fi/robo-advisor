@@ -40,8 +40,8 @@ module.exports = async(callback) => {
         const compPool = await IStrategy.at(compStrategyAddress);
         const aavePool = await IStrategy.at(aaveStrategyAddress);
 
-        const aavePoolInvested = await aavePool.investedUnderlyingBalance();
-        const compPoolInvested = await compPool.investedUnderlyingBalance();
+        const aavePoolAPR = await aavePool.getAPR();
+        const compPoolAPR = await compPool.getAPR();
 
         const balanceInAccount = await tokenInstance.balanceOf(currentAccount);
         const balanceInManager = await tokenInstance.balanceOf(strategyManagerAddress);
@@ -70,11 +70,14 @@ module.exports = async(callback) => {
         console.log('cTokenBalanceInStrategy:', cTokenBalanceInStrategy.toString());
         console.log('cTokenBalanceInManager:', cTokenBalanceInManager.toString());
         console.log('compInvestedUnderlyingBalance:', compBalance.toString());
+        console.log('compAPR:', compPoolAPR.toString());
 
         console.log('balanceInAaveStrategy:', balanceInAaveStrategy.toString());
         console.log('aTokenBalanceInStrategy:', aTokenBalanceInStrategy.toString());
         console.log('aTokenBalanceInManager:', aTokenBalanceInManager.toString());
         console.log('aaveInvestedUnderlyingBalance:', aaveBalance.toString());
+        console.log('aaveAPR:', aavePoolAPR.toString());
+
 
     } catch (error) {
         console.log(error);

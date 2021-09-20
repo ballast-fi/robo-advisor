@@ -28,15 +28,18 @@ function Pool({
 
   const handleDeposit = async (e) => {
     e.preventDefault();
-    await tokenDeposit(web3, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch)
+    await tokenDeposit(web3, poolName, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch)
+    setAmount('')
   }
   const handleRedeem = async(e) => {
     e.preventDefault();
     await tokenRedeem(web3, decimals, poolInstance, poolAddress, tokenAddress, amount, account, dispatch)
+    setAmount('')
   }
-
   const handleInputChange = (e) => {
-    setAmount(e.target.value);
+    let num = e.target.value;
+    num = (num.indexOf(".") >= 0) ? (num.substr(0, num.indexOf(".")) + num.substr(num.indexOf("."), decimals)) : num;
+    setAmount(num.toString());
   }
   return (
     <Container style={{maxWidth: '75%', marginTop: '5%'}}>
@@ -85,7 +88,7 @@ function Pool({
           <h1 className='title'>Pool Action</h1>
           <hr></hr>
           <Row className="input-row">
-            <input disabled={isRedeeming || isDepositing} type="number" autoComplete="off" className="amount" placeholder="Amount" name="amount" value={amount} onChange={handleInputChange}/> 
+            <input step="any" disabled={isRedeeming || isDepositing} type="number" autoComplete="off" className="amount" placeholder="Enter amount" name="amount" value={amount} onChange={handleInputChange}/> 
           </Row>
           <Row className="btn-row">
             <Col>

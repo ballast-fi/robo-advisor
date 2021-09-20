@@ -34,9 +34,11 @@
     "@openzeppelin/contracts-upgradeable": "^4.2.0",
     "@truffle/hdwallet-provider": "^1.4.2",
     "dotenv": "^10.0.0",
+    "eslint": "^6.1.0",
     "logops": "^2.1.1",
     "solhint": "^3.3.6",
-    "truffle": "^5.4.3"
+    "truffle": "^5.4.3",
+    "webpack": "4.41.0"
   },
   "devDependencies": {
     "@openzeppelin/truffle-upgrades": "^1.8.0"

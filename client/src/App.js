@@ -62,7 +62,14 @@ function App() {
   }
     return (
       <div className="App">
-        <ToastContainer className="notify" autoClose={1600} position="top-center" style={{marginTop: '100px'}}/>
+        <ToastContainer 
+          bodyClassName="toast-body" 
+          toastClassName="toast-wrapper" 
+          progressClassName="progress" 
+          autoClose={1800}
+          theme={'light'} 
+          position="bottom-right" 
+        />
         <Router >
           <Route exact path={[
             "/pools",

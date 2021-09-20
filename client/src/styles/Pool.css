@@ -146,10 +146,6 @@ thead tr{
   height: 70px;
 }
 
-.notify {
-  margin-top: 2.5%;
-}
-
 .pool-thead-row {
   background-color: #383d51;
   border: 2px solid #383d51;
@@ -157,4 +153,3 @@ thead tr{
   font-size: 1.25rem;
   color: rgb(233,229,236);
 }
-
