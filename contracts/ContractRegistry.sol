@@ -53,6 +53,10 @@ contract ContractRegistry is Ownable, IContractRegistry {
         return IPoolFactory(requireAndGetAddress("PoolFactory"));
     }
 
+    function priceOracle() external override view returns (IPriceOracle) {
+        return IPriceOracle(requireAndGetAddress("PriceOracle"));
+    }
+
     /// @notice Gets a contract address by a given name
     /// @param  name name in bytes
     /// @return contract address, fails if not found
