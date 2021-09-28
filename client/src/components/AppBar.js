@@ -64,8 +64,12 @@ function AppBar() {
 
   const getNetwork = (chainId) => {
     switch (chainId) {
+      case '0x1':
+        return 'Mainnet'
       case '0x4':
         return 'Rinkeby'
+      case '0x2a':
+        return 'Kovan'
       case '0x539':
         return 'Local'
       default:
