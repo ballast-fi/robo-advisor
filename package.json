@@ -17,7 +17,8 @@
     "lint": "solhint contracts/*.sol --formatter stylish",
     "lint:fix": "solhint contracts/*.sol --formatter stylish --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pool:create": "sh ./scripts/pool-create.sh"
+    "pool:create": "sh ./scripts/pool-create.sh",
+    "generate-docs": "solidity-docgen -t . --solc-module solc-0.7"
   },
   "repository": {
     "type": "git",
@@ -30,8 +31,8 @@
   },
   "homepage": "https://github.com/ballast-fi/robo-advisor#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0",
-    "@openzeppelin/contracts-upgradeable": "^4.2.0",
+    "@openzeppelin/contracts": "^3.4.2",
+    "@openzeppelin/contracts-upgradeable": "^3.4.2",
     "@truffle/hdwallet-provider": "^1.4.2",
     "dotenv": "^10.0.0",
     "eslint": "^6.1.0",
@@ -41,6 +42,9 @@
     "webpack": "4.41.0"
   },
   "devDependencies": {
-    "@openzeppelin/truffle-upgrades": "^1.8.0"
+    "@openzeppelin/truffle-upgrades": "^1.8.0",
+    "solc-0.7": "npm:solc@^0.7.0",
+    "solidity-docgen": "^0.5.14",
+    "truffle-plugin-verify": "^0.5.15"
   }
 }

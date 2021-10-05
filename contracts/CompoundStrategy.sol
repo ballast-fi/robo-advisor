@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity 0.7.6;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./interfaces/ComptrollerInterface.sol";
@@ -93,6 +93,9 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     //  @return tokens redeemed.
     function redeem(uint256 _redeemAmount, uint256 _totalSupply, address _account) external override onlyController
     returns (uint256 tokens) {
+
+        require(_redeemAmount <= _totalSupply, "ERR_REDEEM_COMP");
+
         CERC20 _cToken = CERC20(protocolToken);
         IERC20 _underlying = IERC20(underlying);
 
@@ -106,7 +109,7 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     }
 
     /// @notice Execute a rebalance by liquidating the gov rewards and reinvesting into the protocol.
-    function rebalance() external override onlyController {
+    function rebalance(bytes memory _data) external override onlyController {
         _liquidateReward();
         _mint();
     }

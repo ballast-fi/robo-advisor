@@ -1,7 +1,5 @@
-const CompoundStrategyFactory = artifacts.require("CompoundStrategyFactory");
-const AaveStrategyFactory = artifacts.require("AaveStrategyFactory");
+const PoolFactory = artifacts.require("PoolFactory");
 const ContractRegistry = artifacts.require("ContractRegistry");
-const StrategyManagerFactory = artifacts.require("StrategyManagerFactory");
 
 module.exports = async(callback) => {
 
@@ -13,21 +11,22 @@ module.exports = async(callback) => {
         }
 
 
-        const compoundFactoryInstance = await CompoundStrategyFactory.deployed();
-        // get latest strategy address for the given token
-        const compStrategyAddress = await compoundFactoryInstance.poolStrategies(token);
+        const strategyFactoryInstance = await PoolFactory.deployed();
 
-        const aaveFactoryInstance = await AaveStrategyFactory.deployed();
-        // get latest strategy address for the given token
-        const aaveStrategyAddress = await aaveFactoryInstance.poolStrategies(token);
+        const compStrategyAddress = await strategyFactoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('CompoundStrategy'))
+        );
+        const aaveStrategyAddress = await strategyFactoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('AaveStrategy'))
+        );
 
         const _data = web3.eth.abi.encodeParameters(['uint256[]', 'address[]'],
             [[60000000, 40000000], [compStrategyAddress, aaveStrategyAddress]]);
 
         const registryInstance = await ContractRegistry.deployed();
-        const factoryInstance = await StrategyManagerFactory.deployed();
-        const receipt = await factoryInstance.createStrategy(
-            token, registryInstance.address, _data
+        const receipt = await strategyFactoryInstance.createStrategy(
+            token, web3.utils.soliditySha3('StrategyManager'),
+            registryInstance.address, _data
         );
         console.log('receipt:', receipt);
     } catch (error) {

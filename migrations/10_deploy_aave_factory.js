@@ -1,7 +1,9 @@
 const AaveStrategy = artifacts.require("AaveStrategy");
-const AaveStrategyFactory = artifacts.require("AaveStrategyFactory");
+const PoolFactory = artifacts.require("PoolFactory");
 
 module.exports = async function(deployer) {
 	const strategyInstance = await AaveStrategy.deployed();
-	await deployer.deploy(AaveStrategyFactory, strategyInstance.address);
+	const factoryInstance = await PoolFactory.deployed();
+
+	await factoryInstance.upgradeTo(web3.utils.soliditySha3('AaveStrategy'), strategyInstance.address);
 }

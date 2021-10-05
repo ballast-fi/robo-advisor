@@ -1,4 +1,4 @@
-const AaveStrategyFactory = artifacts.require("AaveStrategyFactory");
+const PoolFactory = artifacts.require("PoolFactory");
 const ContractRegistry = artifacts.require("ContractRegistry");
 
 module.exports = async(callback) => {
@@ -18,7 +18,7 @@ module.exports = async(callback) => {
         }
 
 
-        const factoryInstance = await AaveStrategyFactory.deployed();
+        const factoryInstance = await PoolFactory.deployed();
         const registryInstance = await ContractRegistry.deployed();
 
         // init data for L2 token
@@ -26,7 +26,8 @@ module.exports = async(callback) => {
             [aToken, addressProvider, uniswapRouterV2]);
 
         const receipt = await factoryInstance.createStrategy(
-            token, registryInstance.address, _data
+            token, web3.utils.soliditySha3('AaveStrategy'),
+            registryInstance.address, _data
         );
         console.log('receipt:', receipt);
     } catch (error) {

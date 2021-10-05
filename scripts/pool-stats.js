@@ -1,6 +1,3 @@
-const CompoundStrategyFactory = artifacts.require("CompoundStrategyFactory");
-const AaveStrategyFactory = artifacts.require("AaveStrategyFactory");
-const StrategyManagerFactory = artifacts.require("StrategyManagerFactory");
 const PoolFactory = artifacts.require("PoolFactory");
 const Pool = artifacts.require("Pool");
 const IStrategy = artifacts.require("IStrategy");
@@ -16,21 +13,24 @@ module.exports = async(callback) => {
         const accounts = await web3.eth.getAccounts();
         const currentAccount = accounts[0];
 
-        const strategyManagerFactoryInstance = await StrategyManagerFactory.deployed();
-        // get latest strategy address for the given token
-        const strategyManagerAddress = await strategyManagerFactoryInstance.strategyManagers(token);
-
         const factoryInstance = await PoolFactory.deployed();
+        // get latest strategy manager address for the given token
+        const strategyManagerAddress = await factoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('StrategyManager'))
+        );
+
         // get latest pool address for the given token
         const poolAddress = await factoryInstance.poolAddresses(token);
 
-        const compFactoryInstance = await CompoundStrategyFactory.deployed();
-        // get latest strategy address for the given token
-        const compStrategyAddress = await compFactoryInstance.poolStrategies(token);
+        // get latest compound strategy address for the given token
+        const compStrategyAddress = await factoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('CompoundStrategy'))
+        );
 
-        const aaveFactoryInstance = await AaveStrategyFactory.deployed();
-        // get latest strategy address for the given token
-        const aaveStrategyAddress = await aaveFactoryInstance.poolStrategies(token);
+        // get latest aave strategy address for the given token
+        const aaveStrategyAddress = await factoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('AaveStrategy'))
+        );
 
         const poolInstance = await Pool.at(poolAddress);
         const tokenInstance = await IERC20.at(token);

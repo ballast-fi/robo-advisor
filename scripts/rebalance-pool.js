@@ -24,9 +24,17 @@ module.exports = async(callback) => {
         const poolAddress = await factoryInstance.poolAddresses(token);
         const poolInstance = await Pool.at(poolAddress);
 
-        await poolInstance.setMaxInvestmentPerc(100000000);
+        // build the pool data respecting the strategy chain
+        const _strategyData = '0x';
+        const _managerData = web3.eth.abi.encodeParameters(['uint256[]', 'bytes'],
+            [[0, 100000000], _strategyData]);
+        const _poolData = web3.eth.abi.encodeParameters(['uint256', 'bytes'],
+            [100000000, _managerData]);
 
-        const receipt = await poolInstance.rebalance();
+        const estimatedGasUsage = await poolInstance.rebalance.estimateGas(_poolData);
+        console.log('estimatedGasUsage:', estimatedGasUsage);
+
+        const receipt = await poolInstance.rebalance(_poolData);
         console.log('receipt:', receipt);
 
     } catch (error) {
