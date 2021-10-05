@@ -1,4 +1,4 @@
-const CompoundStrategyFactory = artifacts.require("CompoundStrategyFactory");
+const PoolFactory = artifacts.require("PoolFactory");
 const ContractRegistry = artifacts.require("ContractRegistry");
 
 module.exports = async(callback) => {
@@ -19,7 +19,7 @@ module.exports = async(callback) => {
         }
 
 
-        const factoryInstance = await CompoundStrategyFactory.deployed();
+        const factoryInstance = await PoolFactory.deployed();
         const registryInstance = await ContractRegistry.deployed();
 
         // init data for L2 token
@@ -27,7 +27,8 @@ module.exports = async(callback) => {
             [cToken, compToken, comptroller, uniswapRouterV2]);
 
         const receipt = await factoryInstance.createStrategy(
-            token, registryInstance.address, _data
+            token, web3.utils.soliditySha3('CompoundStrategy'),
+            registryInstance.address, _data
         );
         console.log('receipt:', receipt);
     } catch (error) {

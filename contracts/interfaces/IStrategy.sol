@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity 0.7.6;
 
 interface IStrategy {
 
@@ -10,7 +10,7 @@ interface IStrategy {
 
     function redeem(uint256 _redeemAmount, uint256 _totalSupply, address _account) external returns (uint256);
 
-    function rebalance() external;
+    function rebalance(bytes memory _data) external;
 
     function getAPR() external view returns (uint256);
 

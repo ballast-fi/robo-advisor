@@ -1,40 +1,42 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
-import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 import "./interfaces/IPool.sol";
 import "./interfaces/IPoolFactory.sol";
 import "./interfaces/IBaseContract.sol";
+import "./interfaces/IStrategy.sol";
+
+import "./Beacon.sol";
+import "./BeaconProxy.sol";
 
 /// @title  PoolFactory
 /// @notice Creates new pools for underlying tokens.
-contract PoolFactory is UpgradeableBeacon, IPoolFactory, IBaseContract {
+contract PoolFactory is Beacon, IPoolFactory, IBaseContract {
 
     mapping(address => address) public override poolAddresses;
     address[] public tokenAddresses;
 
-    event PoolProxyDeployed(address proxy);
+    /// @notice address of strategies per underlying token/key
+    mapping(bytes32 => address) public poolStrategies;
 
-    // solhint-disable-next-line
-    /// @notice Construct an upgradable beacon.
-    /// @param  implementation_ address of the beacon proxy.
-    constructor(address implementation_) UpgradeableBeacon(implementation_) {}
+    event PoolProxyDeployed(address proxy);
 
     /// @notice Creates new pools for underlying token. Only owner.
     /// @param  poolToken  address of the underlying token to crete pool for.
     /// @return address pool address
-    function createPool(address poolToken, address _strategy, uint256 _maxInvestmentPerc)
+    function createPool(address poolToken, bytes32 _poolId, address _strategy)
     external onlyOwner returns (address) {
 
         // Check if a pool was already created for the given token.
+        require(_strategy != address(0), "ZERO_ADDRESS");
+        require(poolToken != address(0), "ZERO_ADDRESS");
         require(poolAddresses[poolToken] == address(0), "ALREADY_CREATED");
 
         // Deploy a beacon proxy that gets the implementation address for each call from a UpgradeableBeacon.
-        address instance = address(new BeaconProxy(address(this), ""));
+        address instance = address(new BeaconProxy(address(this), _poolId));
         emit PoolProxyDeployed(instance);
 
         // Check that the contract was created
@@ -45,7 +47,7 @@ contract PoolFactory is UpgradeableBeacon, IPoolFactory, IBaseContract {
         string memory _symbol = "LPT";
 
         // init the pool; add initial strategies
-        IPool(instance).initialize(_name, _symbol, poolToken, _strategy, _maxInvestmentPerc, msg.sender);
+        IPool(instance).initialize(_name, _symbol, poolToken, _strategy, msg.sender);
 
         tokenAddresses.push(poolToken);
 
@@ -53,6 +55,35 @@ contract PoolFactory is UpgradeableBeacon, IPoolFactory, IBaseContract {
         poolAddresses[poolToken] = instance;
         return instance;
 
+    }
+
+    /// @notice Creates new strategy for underlying token. Only owner.
+    /// @param  _underlying Underlying token address
+    /// @param  _strategyId Strategy id
+    /// @param  _registry Contract registry
+    /// @param  _data call data
+    /// @return address strategy address
+    function createStrategy(address _underlying, bytes32 _strategyId, address _registry, bytes calldata _data)
+    external onlyOwner returns (address) {
+
+        require(_registry != address(0), "ZERO_ADDRESS");
+        require(_underlying != address(0), "ZERO_ADDRESS");
+
+        bytes32 _key = keccak256(abi.encodePacked(_underlying, _strategyId));
+        require(poolStrategies[_key] == address(0), "ALREADY_CREATED");
+
+        // Deploy a beacon proxy that gets the implementation address for each call from a UpgradeableBeacon.
+        address instance = address(new BeaconProxy(address(this), _strategyId));
+
+        // Check that the contract was created
+        require(instance != address(0), "NOT_CREATED");
+
+        // init the strategy
+        IStrategy(instance).initialize(_underlying, _registry, msg.sender, _data);
+
+        poolStrategies[_key] = instance;
+
+        return instance;
     }
 
     /// @notice Pool count

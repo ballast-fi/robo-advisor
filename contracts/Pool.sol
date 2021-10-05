@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity 0.7.6;
 
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./interfaces/IPool.sol";
@@ -26,6 +26,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     using SafeERC20 for ERC20;
     uint256 public constant DEFAULT_LPT_RATE = 1000;
     uint256 private constant FULL_ALLOC = 100000000;
+    uint256 private constant MARGIN_ALLOC = 1000000; // 1%
 
     /// @notice when LP amount was redeemed
     event Redeemed(address indexed beneficiary, uint256 amount);
@@ -42,9 +43,6 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     //  @notice Strategy address
     address public override underlyingStrategy;
 
-    // Max assets percentage to be invested. The rest is kept in the pool as reserve
-    uint256 public maxInvestmentPerc; // 100000 == 100% -> 1000
-
     // Current fee on interest gained
     uint256 public fee;
 
@@ -55,11 +53,9 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     /// @param  _name name of the LP token
     /// @param  _symbol symbol of the LP token
     /// @param  _token underlying token address
-    /// @param  _strategy address of the strategy
     /// @param  _owner contract owner
     function initialize(
-        string memory _name, string memory _symbol, address _token,
-        address _strategy, uint256 _maxInvestmentPerc, address _owner
+        string memory _name, string memory _symbol, address _token, address _strategy, address _owner
     ) external override initializer {
         ERC20Upgradeable.__ERC20_init(_name, _symbol);
         OwnableUpgradeable.__Ownable_init();
@@ -70,8 +66,6 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         underlyingStrategy = _strategy;
         transferOwnership(_owner);
 
-        require(_maxInvestmentPerc <= FULL_ALLOC, "PERC_HIGHER");
-        maxInvestmentPerc = _maxInvestmentPerc;
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
@@ -154,23 +148,62 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
 
     /// @notice Execute a rebalance. Only owner.
     ///         Fails if the rebalance would result into lower APR.
-    function rebalance() external onlyOwner {
+    //  @param  _data rebalance data
+    function rebalance(bytes memory _data) external onlyOwner {
 
-        uint256 aprBefore = getAPR();
-        uint256 totalSupply = totalSupply();
-        // redeem the full supply
-        IStrategy(underlyingStrategy).redeem(totalSupply, totalSupply, address(this));
-        // re-invest
-        _invest();
-        // rebalance the supplied investment
-        IStrategy(underlyingStrategy).rebalance();
-        uint256 aprAfter = getAPR();
+        (uint256 _maxInvestmentPerc, 
+        bytes memory _underlyingData) = abi.decode(_data, (uint256, bytes));
 
-        require(aprBefore <= aprAfter, "LOWER_APR");
+        require(_maxInvestmentPerc <= FULL_ALLOC, "PERC_HIGHER");
+
+        uint256 poolBalance = underlyingBalanceInPool();
+        uint256 investedBalance = IStrategy(underlyingStrategy).investedUnderlyingBalance();
+        uint256 underlyingBalance = poolBalance.add(investedBalance);
+        // get current investment percentage
+        uint256 currentInvestmentPerc = underlyingBalance == 0
+            ? 0
+            : investedBalance.mul(FULL_ALLOC).div(underlyingBalance);
+
+        uint256 allocationDiff;
+
+        if (_maxInvestmentPerc < currentInvestmentPerc) {
+            // redeem the diff
+            allocationDiff = (currentInvestmentPerc.sub(_maxInvestmentPerc))
+                .mul(underlyingBalance)
+                .div(investedBalance);
+            if (allocationDiff > MARGIN_ALLOC) {
+                IStrategy(underlyingStrategy).redeem(allocationDiff, FULL_ALLOC, address(this));
+            }
+        } else {
+            if (_maxInvestmentPerc > currentInvestmentPerc) {
+                // invest the diff
+                allocationDiff = poolBalance == 0
+                ?   _maxInvestmentPerc
+                :   (_maxInvestmentPerc.sub(currentInvestmentPerc))
+                    .mul(underlyingBalance)
+                    .div(poolBalance);
+                if (allocationDiff > MARGIN_ALLOC) {
+                    _invest(underlyingStrategy, allocationDiff, poolBalance);
+                }
+            }
+        }
+
+        IStrategy(underlyingStrategy).rebalance(_underlyingData);
     }
 
-    function setMaxInvestmentPerc(uint256 _maxInvestmentPerc) external onlyOwner {
-        maxInvestmentPerc = _maxInvestmentPerc;
+    function changeStrategy(address _underlyingStrategy) external onlyOwner {
+
+        require(_underlyingStrategy != address(0), "ZERO_ADDR");
+        require(_underlyingStrategy != underlyingStrategy, "NO_CHANGE");
+
+        uint256 totalSupply = totalSupply();
+        // redeem the full supply from previous strategy
+        IStrategy(underlyingStrategy).redeem(totalSupply, totalSupply, address(this));
+
+        // set new strategy
+        underlyingStrategy = _underlyingStrategy;
+
+        // trigger rebalance as next step
     }
 
     /// @notice APR for the investment
@@ -234,24 +267,19 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         return redeemed.sub(feeDue);
     }
 
-    function availableToInvestOut() public view returns (uint256) {
-        uint256 wantInvestInTotal = underlyingBalanceInclStrategy()
-        .mul(maxInvestmentPerc)
+    function availableToInvestOut(uint256 _allocation, uint256 _total) public view returns (uint256) {
+        uint256 wantInvestInTotal = _total
+        .mul(_allocation)
         .div(FULL_ALLOC);
-        uint256 alreadyInvested = IStrategy(underlyingStrategy).investedUnderlyingBalance();
-        if (alreadyInvested >= wantInvestInTotal) {
-            return 0;
-        } else {
-            uint256 remainingToInvest = wantInvestInTotal.sub(alreadyInvested);
-            return remainingToInvest <= underlyingBalanceInPool()
-            ? remainingToInvest : underlyingBalanceInPool();
-        }
+
+        return wantInvestInTotal <= _total
+            ? wantInvestInTotal : _total;
     }
 
-    function _invest() internal {
-        uint256 availableAmount = availableToInvestOut();
+    function _invest(address _strategy, uint256 _allocation, uint256 _total) internal {
+        uint256 availableAmount = availableToInvestOut(_allocation, _total);
         if (availableAmount > 0) {
-            underlying.safeTransfer(underlyingStrategy, availableAmount);
+            underlying.safeTransfer(_strategy, availableAmount);
         }
     }
 }

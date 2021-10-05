@@ -1,8 +1,6 @@
 const Pool = artifacts.require("Pool");
 const PoolFactory = artifacts.require("PoolFactory");
 
-const StrategyManagerFactory = artifacts.require("StrategyManagerFactory");
-
 module.exports = async(callback) => {
 
     const token = process.env.TOKEN
@@ -12,12 +10,12 @@ module.exports = async(callback) => {
             throw new Error('Invalid underlying token');
         }
         const factoryInstance = await PoolFactory.deployed();
-        const strategyFactoryInstance = await StrategyManagerFactory.deployed();
+        // get latest strategy manager address for the given token
+        const strategyAddress = await factoryInstance.poolStrategies(
+            web3.utils.soliditySha3(token, web3.utils.soliditySha3('StrategyManager'))
+        );
 
-        // get latest strategy address for the given token
-        const strategyAddress = await strategyFactoryInstance.strategyManagers(token);
-
-        const receipt = await factoryInstance.createPool(token, strategyAddress, 80000000);
+        const receipt = await factoryInstance.createPool(token, web3.utils.soliditySha3('Pool'), strategyAddress);
         console.log('receipt:', receipt);
     } catch (error) {
         console.log(error);

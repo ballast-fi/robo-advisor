@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "homepage": "./",
+  "homepage": ".",
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
     "bootstrap": "^5.0.2",
@@ -25,7 +25,7 @@
     "webpack": "4.41.0"
   },
   "scripts": {
-    "start": "mkdir -p ./src/assets/contracts/ && npm run copy-contracts && HOST=192.168.254.143 react-scripts start",
+    "start": "mkdir -p ./src/assets/contracts/ && npm run copy-contracts && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
