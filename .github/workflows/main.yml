@@ -1,0 +1,58 @@
+# Reference: https://github.com/marketplace/actions/setup-node-js-environment
+
+name: Truffle Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup NodeJS 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'yarn'
+      - name: Show NodeJS version
+        run: npm --version
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8 # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+      - name: Show Python version
+        run: python --version
+
+      - name: Install Slither
+        run: |
+          pip3 install solc-select
+          pip3 install slither-analyzer
+          solc-select install 0.7.6
+          solc-select use 0.7.6
+
+      - name: Run Slither
+        run: |
+          [[ -f slither-results.json ]] && rm slither-results.json
+          slither . --json slither-results.json
+      - name: Commit Slither Results
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: github-actions
+          author_email: action@github.com
+          message: 'chore: added slither results'
+          add: 'slither-results.json'
