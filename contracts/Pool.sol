@@ -46,6 +46,9 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     // Current fee on interest gained
     uint256 public fee;
 
+    // fee contract address
+    address public feeAddress;
+
     // Map that saves avg price paid for each user, used to calculate earnings
     mapping(address => uint256) public userAvgPrices;
 
@@ -55,7 +58,8 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     /// @param  _token underlying token address
     /// @param  _owner contract owner
     function initialize(
-        string memory _name, string memory _symbol, address _token, address _strategy, address _owner
+        string memory _name, string memory _symbol, address _token,
+        address _feeAddress, uint256 _fee, address _strategy, address _owner
     ) external override initializer {
         ERC20Upgradeable.__ERC20_init(_name, _symbol);
         OwnableUpgradeable.__Ownable_init();
@@ -63,9 +67,11 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         underlying = ERC20(_token);
         underlyingUnit = 10 ** uint256(underlying.decimals());
 
+        feeAddress = _feeAddress;
+        fee = _fee;
         underlyingStrategy = _strategy;
-        transferOwnership(_owner);
 
+        transferOwnership(_owner);
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
@@ -263,7 +269,10 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         }
 
         uint256 feeDue = amount.mul(currPrice.sub(avgPrice)).mul(fee).div(10**23);
-        // TODO send feeDue somewhere
+        if (feeDue > 0) {
+            underlying.safeTransfer(feeAddress, feeDue);
+        }
+
         return redeemed.sub(feeDue);
     }
 

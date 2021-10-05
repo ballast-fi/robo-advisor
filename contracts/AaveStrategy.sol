@@ -42,16 +42,18 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     /// @notice uniswap router
     address public uniswapRouterV2;
 
+    /// @notice threshold for liquidating protocol rewards
     uint256 public rewardThreshold;
+
+    /// @notice strategy controller
+    address public controller;
 
     /// aave provider
     ILendingPoolAddressesProvider public provider;
 
     /// @dev only pool controllers
     modifier onlyController() {
-        address poolAddress = contractRegistry.poolFactory().poolAddresses(underlying);
-        require(msg.sender == IPool(poolAddress).underlyingStrategy()
-            || msg.sender == poolAddress
+        require(msg.sender == controller
             || msg.sender == owner(),
             "NOT_POOL_CONTROLLER");
         _;
@@ -62,7 +64,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     /// @param  _registry Contract registry address
     /// @param  _owner Contract owner
     /// @param  _data init data
-    function initialize(address _underlying, address _registry, address _owner, bytes memory _data)
+    function initialize(address _underlying, address _registry, address _controller,
+        address _owner, bytes memory _data)
     external override initializer {
 
         require(_underlying != address(0) && _owner != address(0) && _registry != address(0), "ZERO_ADDRESS");
@@ -80,6 +83,7 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         uniswapRouterV2 = _uniswapRouterV2;
 
         contractRegistry = IContractRegistry(_registry);
+        controller = _controller;
 
         transferOwnership(_owner);
     }
@@ -112,6 +116,10 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     function rebalance(bytes memory _data) external override onlyController {
         _liquidateReward();
         _mint();
+    }
+
+    function changeController(address _controller) external override onlyOwner {
+        controller = _controller;
     }
 
     /// @notice Amount of the underlying token invested in protocol token.

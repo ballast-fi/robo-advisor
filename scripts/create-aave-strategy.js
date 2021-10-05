@@ -20,6 +20,9 @@ module.exports = async(callback) => {
 
         const factoryInstance = await PoolFactory.deployed();
         const registryInstance = await ContractRegistry.deployed();
+        const predictedControllerAddress = await factoryInstance.getStrategyAddress(
+            web3.utils.soliditySha3('StrategyManager')
+        );
 
         // init data for L2 token
         const _data = web3.eth.abi.encodeParameters(['address', 'address', 'address'],
@@ -27,7 +30,7 @@ module.exports = async(callback) => {
 
         const receipt = await factoryInstance.createStrategy(
             token, web3.utils.soliditySha3('AaveStrategy'),
-            registryInstance.address, _data
+            registryInstance.address, predictedControllerAddress, _data
         );
         console.log('receipt:', receipt);
     } catch (error) {

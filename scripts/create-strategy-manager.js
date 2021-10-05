@@ -19,14 +19,17 @@ module.exports = async(callback) => {
         const aaveStrategyAddress = await strategyFactoryInstance.poolStrategies(
             web3.utils.soliditySha3(token, web3.utils.soliditySha3('AaveStrategy'))
         );
+        const predictedControllerAddress = await strategyFactoryInstance.getStrategyAddress(
+            web3.utils.soliditySha3('Pool')
+        );
 
-        const _data = web3.eth.abi.encodeParameters(['uint256[]', 'address[]'],
-            [[60000000, 40000000], [compStrategyAddress, aaveStrategyAddress]]);
+        const _data = web3.eth.abi.encodeParameters(['address[]'],
+            [[compStrategyAddress, aaveStrategyAddress]]);
 
         const registryInstance = await ContractRegistry.deployed();
         const receipt = await strategyFactoryInstance.createStrategy(
             token, web3.utils.soliditySha3('StrategyManager'),
-            registryInstance.address, _data
+            registryInstance.address, predictedControllerAddress, _data
         );
         console.log('receipt:', receipt);
     } catch (error) {

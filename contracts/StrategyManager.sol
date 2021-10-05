@@ -32,12 +32,16 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
     /// @notice contract registry
     IContractRegistry public contractRegistry;
 
+    /// @notice strategy controller
+    address public controller;
+
     /// @notice Initialize the contract instead of a constructor during deployment.
     /// @param  _underlying Underlying token address
     /// @param  _registry Contract registry address
     //  @param  _owner Contract owner
     /// @param  _data strategy init data
-    function initialize(address _underlying, address _registry, address _owner, bytes memory _data)
+    function initialize(address _underlying, address _registry, address _controller,
+        address _owner, bytes memory _data)
         external override initializer {
 
         require(_underlying != address(0) && _owner != address(0)
@@ -45,22 +49,22 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
 
         OwnableUpgradeable.__Ownable_init();
 
-        (uint256[] memory _allocations, address[] memory _strategies) = abi.decode(
-        _data, (uint256[], address[]));
+        (address[] memory _strategies) = abi.decode(_data, (address[]));
 
         underlying = _underlying;
         contractRegistry = IContractRegistry(_registry);
 
         underlyingStrategy = _strategies;
+        controller = _controller;
 
         transferOwnership(_owner);
     }
 
-    /// @dev only controller
+    /// @dev only pool controllers
     modifier onlyController() {
-        require(msg.sender == contractRegistry.poolFactory().poolAddresses(underlying)
+        require(msg.sender == controller
             || msg.sender == owner(),
-            "NOT_POOL");
+            "NOT_POOL_CONTROLLER");
         _;
     }
 
@@ -157,6 +161,10 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         }
         
         executedAllocation = _allocations;
+    }
+
+    function changeController(address _controller) external override onlyOwner {
+        controller = _controller;
     }
 
     /// @notice Get the total balance of the underlying token owned by the pool and its strategies.

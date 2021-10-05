@@ -45,13 +45,15 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     //  @notice uniswap router
     address public uniswapRouterV2;
 
+    /// @notice threshold for liquidating protocol rewards
     uint256 public rewardThreshold;
+
+    /// @notice strategy controller
+    address public controller;
 
     /// @dev only pool controllers
     modifier onlyController() {
-        address poolAddress = contractRegistry.poolFactory().poolAddresses(underlying);
-        require(msg.sender == IPool(poolAddress).underlyingStrategy()
-            || msg.sender == poolAddress
+        require(msg.sender == controller
             || msg.sender == owner(),
             "NOT_POOL_CONTROLLER");
         _;
@@ -62,7 +64,8 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     /// @param  _registry Contract registry address
     /// @param  _owner Contract owner
     /// @param  _data init data
-    function initialize(address _underlying, address _registry, address _owner, bytes memory _data)
+    function initialize(address _underlying, address _registry, address _controller,
+        address _owner, bytes memory _data)
     external override initializer {
 
         require(_underlying != address(0) && _owner != address(0) && _registry != address(0), "ZERO_ADDRESS");
@@ -72,6 +75,7 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
 
         OwnableUpgradeable.__Ownable_init();
 
+        controller = _controller;
         protocolToken = _token;
         underlying = _underlying;
         compToken = _comp;
@@ -114,6 +118,10 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         _mint();
     }
 
+    function changeController(address _controller) external override onlyOwner {
+        controller = _controller;
+    }
+
     /// @notice Amount of the underlying token invested in protocol token.
     /// @return uint256 underlying balance.
     function investedUnderlyingBalance() external override view returns (uint256) {
@@ -143,8 +151,6 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         IERC20(underlying).safeApprove(protocolToken, balance);
         // mint the cTokens and assert there is no error
         require(_cToken.mint(balance) == 0, "ERR_MINT");
-        // cTokens are now in this contract
-        // TODO maybe send them to the sender
     }
 
     function _liquidateReward() internal {
