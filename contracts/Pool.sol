@@ -157,10 +157,19 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     //  @param  _data rebalance data
     function rebalance(bytes memory _data) external onlyOwner {
 
-        (uint256 _maxInvestmentPerc, 
-        bytes memory _underlyingData) = abi.decode(_data, (uint256, bytes));
+        (uint256 _maxInvestmentPerc, address _underlyingStrategy,
+        bytes memory _underlyingData) = abi.decode(_data, (uint256, address, bytes));
 
         require(_maxInvestmentPerc <= FULL_ALLOC, "PERC_HIGHER");
+        require(_underlyingStrategy != address(0), "ZERO_ADDR");
+
+        if (underlyingStrategy != _underlyingStrategy) {
+            uint256 totalSupply = totalSupply();
+            // redeem the full supply from previous strategy
+            IStrategy(underlyingStrategy).redeem(totalSupply, totalSupply, address(this));
+            // set new strategy
+            underlyingStrategy = _underlyingStrategy;
+        }
 
         uint256 poolBalance = underlyingBalanceInPool();
         uint256 investedBalance = IStrategy(underlyingStrategy).investedUnderlyingBalance();
