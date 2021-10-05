@@ -12,13 +12,6 @@ module.exports = async(callback) => {
             throw new Error('Invalid underlying token');
         }
 
-        const strategyManagerFactoryInstance = await StrategyManagerFactory.deployed();
-        // get latest strategy address for the given token
-        const strategyManagerAddress = await strategyManagerFactoryInstance.strategyManagers(token);
-        const strategyManagerInstance = await StrategyManager.at(strategyManagerAddress);
-
-        await strategyManagerInstance.setAllocation([100000000, 0]);
-
         const factoryInstance = await PoolFactory.deployed();
         // get latest pool address for the given token
         const poolAddress = await factoryInstance.poolAddresses(token);
