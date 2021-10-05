@@ -7,12 +7,12 @@ on:
     branches: [main]
     paths:
       - "contracts/**"
-      - ".github/workflows/main.yaml"
+      - ".github/workflows/main.yml"
   pull_request:
     branches: [main]
     paths:
       - "contracts/**"
-      - ".github/workflows/main.yaml"
+      - ".github/workflows/main.yml"
 
 jobs:
   build:
