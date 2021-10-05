@@ -81,7 +81,10 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         bytes memory _underlyingData) = abi.decode(_data, (uint256[], bytes));
 
         uint256 lastLen = executedAllocation.length;
-        require(_allocations.length >= lastLen, "ERR_ALLOCATION_LENGTH");
+        require(_allocations.length >= lastLen,
+            "ERR_ALLOCATION_LENGTH");
+        require(_allocations.length == underlyingStrategy.length,
+            "ERR_ALLOCATION_STRAT_LENGTH");
 
         // compare the allocations
         bool areAllocationsEqual = _allocations.length == lastLen;
@@ -104,7 +107,7 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         uint256 _totalAllocation;
 
         uint256[] memory _allocateFunds = new uint256[](_allocations.length);
-        (uint256[] memory currentAllocations, uint256 totalBalance) = _investedBalanceWithAllocations();
+        (uint256[] memory currentAllocations, uint256 totalBalance) = investedBalanceWithAllocations();
 
         for (uint256 i = 0; i < _allocations.length; i++) {
             _totalAllocation += _allocations[i];
@@ -167,6 +170,10 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         controller = _controller;
     }
 
+    function addUnderlyingStrategy(address _strategy) external onlyOwner {
+        underlyingStrategy.push(_strategy);
+    }
+
     /// @notice Get the total balance of the underlying token owned by the pool and its strategies.
     /// @return total underlying balance.
     function investedUnderlyingBalance() public override view returns (uint256 total) {
@@ -174,10 +181,10 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
             return underlyingBalanceInPool();
         }
 
-        (,total) = _investedBalanceWithAllocations();
+        (,total) = investedBalanceWithAllocations();
     }
 
-    function _investedBalanceWithAllocations() public view returns (
+    function investedBalanceWithAllocations() public view returns (
         uint256[] memory currentAllocations, uint256 total
     ) {
 
@@ -220,6 +227,14 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         if (total > 0) {
             avgApr = avgApr.div(total);
         }
+    }
+
+    function underlyingStrategyLength() external view returns (uint256) {
+        return underlyingStrategy.length;
+    }
+
+    function executedAllocationLength() external view returns (uint256) {
+        return executedAllocation.length;
     }
 
     /// @notice Get the balance of the underlying token owned by the pool itself.
