@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "build": "truffle compile",
     "develop": "npm run truffle:deploy --network=development",
     "deploy": "npm run lint && npm run truffle:deploy --network=development",
     "deploy-rinkeby": "npm run truffle:deploy --network=rinkeby",
