@@ -47,12 +47,4 @@ jobs:
 
       - name: Run Slither
         run: |
-          [[ -f slither-results.json ]] && rm slither-results.json
-          slither . --json slither-results.json
-      - name: Commit Slither Results
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: github-actions
-          author_email: action@github.com
-          message: 'chore: added slither results'
-          add: 'slither-results.json'
+          slither . --print human-summary
