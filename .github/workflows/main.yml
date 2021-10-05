@@ -39,8 +39,9 @@ jobs:
 
       - name: Install Slither
         run: |
-          pip3 install solc-select
-          pip3 install slither-analyzer
+          sudo snap install solc
+          python -m pip install --upgrade pip
+          pip3 install slither-analyzer==0.8.1 solc-select==0.2.1
           solc-select install 0.7.6
           solc-select use 0.7.6
 
