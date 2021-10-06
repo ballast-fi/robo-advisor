@@ -45,7 +45,6 @@ jobs:
 
       - name: Install Slither
         run: |
-          sudo snap install solc
           python -m pip install --upgrade pip
           pip3 install slither-analyzer==0.8.1 solc-select==0.2.1
           solc-select install 0.7.6
@@ -53,12 +52,4 @@ jobs:
 
       - name: Run Slither
         run: |
-          [[ -f slither-results.json ]] && rm slither-results.json
-          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --json slither-results.json
-      - name: Commit Slither Results
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: github-actions
-          author_email: action@github.com
-          message: 'chore: added slither results'
-          add: 'slither-results.json'
+          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --print human-summary
