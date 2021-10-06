@@ -60,9 +60,6 @@ jobs:
       - name: Function summary
         run: |
           slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --print function-summary
-      - name: Data dependency
-        run: |
-          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --print data-dependency
       - name: Inheritance
         run: |
           slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --print inheritance
