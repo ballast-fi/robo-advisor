@@ -53,4 +53,4 @@ jobs:
       - name: Run Slither
         run: |
           [[ -f slither-audit.txt ]] && rm slither-audit.txt
-          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --ignore-compile --filter-paths "node_modules/@openzeppelin|contracts/mocks" --disable-color
+          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/
