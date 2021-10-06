@@ -15,7 +15,6 @@ contract PriceOracle is Ownable, IBaseContract {
     uint256 constant private ONE_18 = 10**18;
     address constant public WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant public COMP = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
-    address constant public WBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
     address constant public DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address constant public USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant public USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
@@ -29,12 +28,10 @@ contract PriceOracle is Ownable, IBaseContract {
         // USD feeds
         priceFeedsUSD[WETH] = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; // WETH
         priceFeedsUSD[COMP] = 0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5; // COMP
-        priceFeedsUSD[WBTC] = 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c; // wBTC
         priceFeedsUSD[DAI] = 0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9; // DAI
         priceFeedsUSD[stkAAVE] = 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9; // AAVE
 
         // ETH feeds
-        priceFeedsETH[WBTC] = 0xdeb288F737066589598e9214E782fa5A8eD689e8; // wBTC
         priceFeedsETH[DAI] = 0x773616E4d11A78F511299002da57A0a94577F1f4; // DAI
         priceFeedsETH[USDC] = 0x986b5E1e1755e3C2440e960477f25201B0a8bbD4; // USDC
         priceFeedsETH[USDT] = 0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46; // USDT

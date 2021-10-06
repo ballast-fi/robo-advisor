@@ -206,6 +206,8 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         // how much costs 1COMP in token (1e(_token.decimals()))
         uint256 compUnderlyingPrice = contractRegistry.priceOracle().getPriceToken(compToken, underlying);
         // mul(100) needed to have a result in the format 4.4e18
-        return compSpeeds.mul(compUnderlyingPrice).mul(blocksPerYear).mul(100).div(cTokenNAV);
+        if (cTokenNAV != 0) {
+            govAPR = compSpeeds.mul(compUnderlyingPrice).mul(blocksPerYear).mul(100).div(cTokenNAV);
+        }
     }
 }

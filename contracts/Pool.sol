@@ -206,21 +206,6 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         IStrategy(underlyingStrategy).rebalance(_underlyingData);
     }
 
-    function changeStrategy(address _underlyingStrategy) external onlyOwner {
-
-        require(_underlyingStrategy != address(0), "ZERO_ADDR");
-        require(_underlyingStrategy != underlyingStrategy, "NO_CHANGE");
-
-        uint256 totalSupply = totalSupply();
-        // redeem the full supply from previous strategy
-        IStrategy(underlyingStrategy).redeem(totalSupply, totalSupply, address(this));
-
-        // set new strategy
-        underlyingStrategy = _underlyingStrategy;
-
-        // trigger rebalance as next step
-    }
-
     /// @notice APR for the investment
     function getAPR() public view returns (uint256 apr) {
         return IStrategy(underlyingStrategy).getAPR();

@@ -1,7 +1,5 @@
 const IUniswapV2Router02 = artifacts.require("IUniswapV2Router02");
 
-const StrategyManagerFactory = artifacts.require("StrategyManagerFactory");
-
 module.exports = async(callback) => {
 
     const token = process.env.TOKEN;
