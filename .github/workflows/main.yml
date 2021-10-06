@@ -52,10 +52,4 @@ jobs:
 
       - name: Run Slither
         run: |
-          [[ -f slither.sarif ]] && rm slither.sarif
-          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --disable-color --sarif slither.sarif > slither-audit.txt 2>&1     
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          # Path to SARIF file relative to the root of the repository
-          sarif_file: slither.sarif
+          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --print human-summary
