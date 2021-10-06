@@ -53,11 +53,4 @@ jobs:
       - name: Run Slither
         run: |
           [[ -f slither-audit.txt ]] && rm slither-audit.txt
-          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --ignore-compile --filter-paths "node_modules/@openzeppelin|contracts/mocks" --disable-color > slither-audit.txt
-      - name: Commit Slither Results
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: github-actions
-          author_email: action@github.com
-          message: 'chore: added slither results'
-          add: 'slither-audit.txt'
+          slither contracts --solc-remaps @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ --ignore-compile --filter-paths "node_modules/@openzeppelin|contracts/mocks" --disable-color
