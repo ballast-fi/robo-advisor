@@ -215,6 +215,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         address rewardToken = _ctrl.REWARD_TOKEN();
         uint256 aaveUnderlyingPrice = contractRegistry.priceOracle().getPriceToken(rewardToken, underlying);
         // mul(100) needed to have a result in the format 4.4e18
-        govAPR = aavePerSec.mul(aaveUnderlyingPrice).mul(secondsPerYear).mul(100).div(aTokenNAV);
+        if (aTokenNAV != 0) {
+            govAPR = aavePerSec.mul(aaveUnderlyingPrice).mul(secondsPerYear).mul(100).div(aTokenNAV);
+        }
     }
 }
