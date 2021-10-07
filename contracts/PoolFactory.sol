@@ -48,15 +48,16 @@ contract PoolFactory is Beacon, IPoolFactory, IBaseContract {
         string memory _name = ERC20(poolToken).name();
         string memory _symbol = "LPT";
 
+        tokenAddresses.push(poolToken);
+
+        // Map created pool with proxy
+        poolAddresses[poolToken] = instance;
+
         // init the pool; add initial strategies
         IPool(instance).initialize(_name, _symbol, poolToken,
             _feeAddress, _fee,
             _strategy, msg.sender);
 
-        tokenAddresses.push(poolToken);
-
-        // Map created pool with proxy
-        poolAddresses[poolToken] = instance;
         return instance;
 
     }
@@ -82,17 +83,17 @@ contract PoolFactory is Beacon, IPoolFactory, IBaseContract {
 
         // Check that the contract was created
         require(instance != address(0), "NOT_CREATED");
+        poolStrategies[_key] = instance;
 
         // init the strategy
         IStrategy(instance).initialize(_underlying, _registry, _controller, msg.sender, _data);
-        poolStrategies[_key] = instance;
 
         return instance;
     }
 
     /// @notice Pool count
     /// @return uint256 count
-    function getTokenAddresses() public view returns (uint256) {
+    function getTokenAddresses() external view returns (uint256) {
         return tokenAddresses.length;
     }
 
@@ -107,8 +108,4 @@ contract PoolFactory is Beacon, IPoolFactory, IBaseContract {
         require(master != address(0), "master must be set");
         return Clones.predictDeterministicAddress(master, _strategyId);
     }
-
-    // solhint-disable-next-line
-    receive() external payable {}
-
 }

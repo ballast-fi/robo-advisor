@@ -24,6 +24,9 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
 
     uint256 private constant ONE_18 = 10**18;
 
+    /// @notice controller changed
+    event ControllerChanged(address indexed oldController, address indexed newController);
+
     /// @notice COMP reward token
     address public compToken;
 
@@ -67,6 +70,8 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     function initialize(address _underlying, address _registry, address _controller,
         address _owner, bytes memory _data)
     external override initializer {
+
+        // FIXME missing zero address validation
 
         require(_underlying != address(0) && _owner != address(0) && _registry != address(0), "ZERO_ADDRESS");
 
@@ -119,6 +124,8 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
     }
 
     function changeController(address _controller) external override onlyOwner {
+        require(_controller != address(0), "ERR_ADDR_ZERO");
+        emit ControllerChanged(controller, _controller);
         controller = _controller;
     }
 
@@ -171,6 +178,7 @@ contract CompoundStrategy is IStrategy, OwnableUpgradeable {
         path[0] = compToken;
         path[1] = IUniswapV2Router02(uniswapRouterV2).WETH();
         path[2] = underlying;
+        // FIXME unused return
         IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
             balance,
             amountOutMin,

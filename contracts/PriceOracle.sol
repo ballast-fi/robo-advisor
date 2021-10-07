@@ -43,11 +43,11 @@ contract PriceOracle is Ownable, IBaseContract {
         return _getPriceUSD(_asset); // 1e18
     }
     /// @notice get price in ETH for an asset
-    function getPriceETH(address _asset) public view returns (uint256) {
+    function getPriceETH(address _asset) external view returns (uint256) {
         return _getPriceETH(_asset); // 1e18
     }
     /// @notice get price in a specific token for an asset
-    function getPriceToken(address _asset, address _token) public view returns (uint256) {
+    function getPriceToken(address _asset, address _token) external view returns (uint256) {
         return _getPriceToken(_asset, _token); // 1e(_token.decimals())
     }
 

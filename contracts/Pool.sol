@@ -61,6 +61,9 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
         string memory _name, string memory _symbol, address _token,
         address _feeAddress, uint256 _fee, address _strategy, address _owner
     ) external override initializer {
+
+        // FIXME zero address
+
         ERC20Upgradeable.__ERC20_init(_name, _symbol);
         OwnableUpgradeable.__Ownable_init();
 
@@ -90,7 +93,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
 
     /// @notice Deposits the underlying token into the liquidity pool.
     /// @param  depositAmount underlying token amount to deposit
-    function deposit(uint256 depositAmount) public {
+    function deposit(uint256 depositAmount) external {
 
         require(depositAmount > 0, "ZERO_AMOUNT");
         require(underlying.allowance(msg.sender, address(this)) >= depositAmount, "INSUFFICIENT_ALLOWANCE");
@@ -103,16 +106,16 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
 
         _updateUserFeeInfo(msg.sender, toMint, lpPrice);
 
+        emit Deposited(msg.sender, depositAmount);
+
         // Transfer the tokens from the sender to this contract.
         underlying.safeTransferFrom(msg.sender, address(this), depositAmount);
-
-        emit Deposited(msg.sender, depositAmount);
     }
 
     /// @notice Redeems LP tokens by burning them and getting back underlying token.
     /// @param  _redeemAmount LP token amount to redeem.
     /// @return redeemedTokens underlying tokens redeemed
-    function redeem(uint256 _redeemAmount) public returns (uint256 redeemedTokens) {
+    function redeem(uint256 _redeemAmount) external returns (uint256 redeemedTokens) {
 
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "ZERO_SUPPLY");
@@ -129,7 +132,8 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
             uint256 missingUnderlying = underlyingAmountToWithdraw.sub(underlyingBalance);
             uint256 missingRedeemed = missingUnderlying.mul(totalSupply).div(totalBalance.sub(underlyingBalance));
 
-            redeemedTokens = IStrategy(underlyingStrategy).redeem(
+            // FIXME unused return
+            IStrategy(underlyingStrategy).redeem(
                 missingRedeemed, totalSupply, address(this)
             );
 
@@ -165,10 +169,13 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
 
         if (underlyingStrategy != _underlyingStrategy) {
             uint256 totalSupply = totalSupply();
-            // redeem the full supply from previous strategy
-            IStrategy(underlyingStrategy).redeem(totalSupply, totalSupply, address(this));
-            // set new strategy
+
+            address oldStrategy = underlyingStrategy;
             underlyingStrategy = _underlyingStrategy;
+
+            // redeem the full supply from previous strategy
+            // FIXME unused return
+            IStrategy(oldStrategy).redeem(totalSupply, totalSupply, address(this));
         }
 
         uint256 poolBalance = underlyingBalanceInPool();
@@ -187,6 +194,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
                 .mul(underlyingBalance)
                 .div(investedBalance);
             if (allocationDiff > MARGIN_ALLOC) {
+                // FIXME unused return
                 IStrategy(underlyingStrategy).redeem(allocationDiff, FULL_ALLOC, address(this));
             }
         } else {
@@ -207,7 +215,7 @@ contract Pool is ERC20Upgradeable, IPool, OwnableUpgradeable {
     }
 
     /// @notice APR for the investment
-    function getAPR() public view returns (uint256 apr) {
+    function getAPR() external view returns (uint256 apr) {
         return IStrategy(underlyingStrategy).getAPR();
     }
 

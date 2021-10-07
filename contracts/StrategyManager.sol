@@ -17,6 +17,9 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
     uint256 private constant FULL_ALLOC = 100000000; // 100%
     uint256 private constant MARGIN_ALLOC = 1000000; // 1%
 
+    /// @notice controller changed
+    event ControllerChanged(address indexed oldController, address indexed newController);
+
     /// @notice underlying token of the pool
     address public override underlying;
 
@@ -45,7 +48,7 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
         external override initializer {
 
         require(_underlying != address(0) && _owner != address(0)
-                && _registry != address(0), "ZERO_ADDRESS");
+                && _registry != address(0) && _controller != address(0), "ZERO_ADDRESS");
 
         OwnableUpgradeable.__Ownable_init();
 
@@ -131,7 +134,7 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
                         .div(investedStrategyBalance);
 
                 if (allocationDiff > MARGIN_ALLOC) {
-                    _strategy.redeem(allocationDiff, FULL_ALLOC, address(this));
+                    require(_strategy.redeem(allocationDiff, FULL_ALLOC, address(this)) > 0, "ERR_STH_WRONG");
                 }
 
             } else if (_proposedAllocation > _currentAllocation) {
@@ -167,6 +170,8 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
     }
 
     function changeController(address _controller) external override onlyOwner {
+        require(_controller != address(0), "ERR_ADDR_ZERO");
+        emit ControllerChanged(controller, _controller);
         controller = _controller;
     }
 
@@ -176,7 +181,7 @@ contract StrategyManager is IStrategy, OwnableUpgradeable {
 
     /// @notice Get the total balance of the underlying token owned by the pool and its strategies.
     /// @return total underlying balance.
-    function investedUnderlyingBalance() public override view returns (uint256 total) {
+    function investedUnderlyingBalance() external override view returns (uint256 total) {
         if (executedAllocation.length == 0) {
             return underlyingBalanceInPool();
         }

@@ -69,7 +69,7 @@ contract ContractRegistry is Ownable, IContractRegistry {
     /// @notice Gets a contract address by a given name as string
     /// @param  _name contract name
     /// @return contract address, address(0) if not found
-    function getAddressByString(string memory _name) public view returns (address) {
+    function getAddressByString(string memory _name) external view returns (address) {
         return registry[stringToBytes32(_name)];
     }
 

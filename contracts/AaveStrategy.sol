@@ -26,9 +26,10 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    uint256 private constant ONE_18 = 10**18;
-
     uint256 public constant secondsPerYear = 31536000;
+
+    /// @notice controller changed
+    event ControllerChanged(address indexed oldController, address indexed newController);
 
     /// @notice Protocol token address (aToken)
     address public protocolToken;
@@ -68,6 +69,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         address _owner, bytes memory _data)
     external override initializer {
 
+        // FIXME zero address return
+
         require(_underlying != address(0) && _owner != address(0) && _registry != address(0), "ZERO_ADDRESS");
 
         (address _token, address _addressesProvider, address _uniswapRouterV2) = abi.decode(
@@ -104,6 +107,7 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         uint256 aTokensToRedeem = _redeemAmount.mul(_protocolTokenBalanceOf()).div(_totalSupply);
         require(_protocolTokenBalanceOf() >= aTokensToRedeem, "NO_FUNDS");
 
+        // FIXME unused return
         ILendingPool(provider.getLendingPool()).withdraw(
             underlying, aTokensToRedeem, address(this)
         );
@@ -119,6 +123,8 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
     }
 
     function changeController(address _controller) external override onlyOwner {
+        require(_controller != address(0), "ERR_ADDR_ZERO");
+        emit ControllerChanged(controller, _controller);
         controller = _controller;
     }
 
@@ -155,21 +161,22 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
 
     function _liquidateReward() internal {
 
-        IAaveIncentivesController controller = IAaveIncentivesController(
+        IAaveIncentivesController aaveController = IAaveIncentivesController(
             IAToken(protocolToken).getIncentivesController()
         );
 
         // claim the reward token
         address[] memory assets = new address[](1);
         assets[0] = protocolToken;
-        uint256 rewardBalance = controller.getRewardsBalance(assets, address(this));
+        uint256 rewardBalance = aaveController.getRewardsBalance(assets, address(this));
         if (rewardBalance == 0) {
             return;
         }
-        controller.claimRewards(assets, rewardBalance, address(this));
+        // FIXME unused return
+        aaveController.claimRewards(assets, rewardBalance, address(this));
 
         // check the reward token
-        address rewardToken = controller.REWARD_TOKEN();
+        address rewardToken = aaveController.REWARD_TOKEN();
         uint256 balance = IERC20(rewardToken).balanceOf(address(this));
 
         if (balance < rewardThreshold) {
@@ -183,6 +190,7 @@ contract AaveStrategy is IStrategy, OwnableUpgradeable {
         path[0] = rewardToken;
         path[1] = IUniswapV2Router02(uniswapRouterV2).WETH();
         path[2] = underlying;
+        // FIXME unused return
         IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
             balance,
             amountOutMin,

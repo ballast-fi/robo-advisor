@@ -37,7 +37,7 @@ contract Beacon is IBeacon, Ownable {
      * - msg.sender must be the owner of the contract.
      * - `newImplementation` must be a contract.
      */
-    function upgradeTo(bytes32 _key, address newImplementation) public virtual onlyOwner {
+    function upgradeTo(bytes32 _key, address newImplementation) external onlyOwner {
         _setImplementation(_key, newImplementation);
         emit Upgraded(_key, newImplementation);
     }
