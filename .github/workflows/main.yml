@@ -46,7 +46,7 @@ jobs:
       - name: Install mythx
         run: pip3 install mythx-cli
 
-      - name: Run MythX Analysis
+      - name: Run MythX Analysis1
         env:
           MYTHX_API_KEY: ${{ secrets.MYTHX_API_KEY }}
         run: |
